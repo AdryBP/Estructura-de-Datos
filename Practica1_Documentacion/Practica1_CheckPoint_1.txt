@@ -1,0 +1,54 @@
+with Ada.Text_IO; use Ada.Text_IO;
+with dcola;
+
+procedure Main is
+
+   subtype tnom is String(1..50);
+   type tjugador is record
+      nom: tnom;
+      l: natural;
+   end record;
+
+   package dcola_jugador is new dcola(tjugador);
+   use dcola_jugador;
+
+   colaFlavioJosefo: dcola_jugador.cola;
+   jugador: tjugador;
+   numPasadas: Integer;
+   
+   ficheroJugadores: File_Type;
+   linea: String(1..50);
+   longitud: natural;
+   
+   indiceRecorrido: Integer := 1;
+
+begin
+
+   dcola_jugador.cvacia(colaFlavioJosefo);
+   
+   Open(ficheroJugadores, In_File, "jugadores.txt");
+   
+   while not End_Of_file(ficheroJugadores) loop
+      
+      Get_Line(ficheroJugadores, linea, longitud);
+      
+      jugador.nom:= linea;
+      jugador.l:= longitud;
+      
+      dcola_jugador.poner(colaFlavioJosefo, jugador);
+      
+   end loop;
+   
+   Close(ficheroJugadores);
+   
+   -- Hacemos un recorrido de la cola para comprobar que todos los jugadores del
+   -- fichero se han insertado correctamente en la cola:
+   
+   while not dcola_jugador.esta_vacia(colaFlavioJosefo) loop
+      jugador:= dcola_jugador.coger_primero(colaFlavioJosefo);
+      Put_Line("El jugador " & Integer'Image(indiceRecorrido) & " es " & jugador.nom);
+      indiceRecorrido := indiceRecorrido + 1;
+      dcola_jugador.borrar_primero(colaFlavioJosefo);
+   end loop;
+
+end Main;

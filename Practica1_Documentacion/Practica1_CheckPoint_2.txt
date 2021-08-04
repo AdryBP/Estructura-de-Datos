@@ -1,0 +1,103 @@
+with Ada.Text_IO; use Ada.Text_IO;
+with dcola;
+
+procedure Main is
+
+   subtype tnom is String(1..50);
+   type tjugador is record
+      nom: tnom;
+      l: natural;
+   end record;
+
+   package dcola_jugador is new dcola(tjugador);
+   use dcola_jugador;
+
+   colaFlavioJosefo: dcola_jugador.cola;
+   jugador: tjugador;
+   
+   numPasadas: Integer;
+   lineaTeclado:String(1..50);
+   longitudLineaTeclado: natural;
+
+   ficheroJugadores: File_Type;
+   lineaFichero: String(1..50);
+   longitudLineaFichero: natural;
+
+   indiceRecorrido: Integer := 1;
+   
+   contadorPasadas: Integer := 0;
+
+begin
+
+   dcola_jugador.cvacia(colaFlavioJosefo); -- Creamos una cola vacía.
+   
+   -----------------------------------------------------------------------------
+   -- Lectura del número de pasadas introducida por teclado.
+   -- Se incluyen Put_Line(" "); para mejorar la legibilidad del output del pro-
+   -- grama en la ventana de Output de GPS.
+   
+   Put_Line(" ");
+   Put_Line("Introduce un número de pasadas para la simulación: ");
+   Get_Line(lineaTeclado, longitudLineaTeclado);
+   numPasadas := Integer'Value(lineaTeclado(1..longitudLineaTeclado));
+   Put_Line(" ");
+   Put_Line("El número de pasadas introducido es: " & Integer'Image(numPasadas));
+   Put_Line(" ");
+
+   -----------------------------------------------------------------------------
+   
+   Open(ficheroJugadores, In_File, "jugadores.txt"); -- Abrimos el fichero de 
+                                                     -- jugadores.
+   -----------------------------------------------------------------------------
+   
+   -- Leemos los jugadores que se encuentran en el fichero jugadores.txt, un ju-
+   -- gador por línea, y los insertamos en la cola:
+
+   while not End_Of_file(ficheroJugadores) loop
+
+      Get_Line(ficheroJugadores, lineaFichero, longitudLineaFichero);
+
+      jugador.nom:= lineaFichero;
+      jugador.l:= longitudLineaFichero;
+
+      dcola_jugador.poner(colaFlavioJosefo, jugador);
+
+   end loop;
+
+   Close(ficheroJugadores); -- Cerramos el fichero tras utilizarlo.
+   
+   -----------------------------------------------------------------------------
+
+   -- Hacemos un recorrido de la cola para comprobar que todos los jugadores del
+   -- fichero se han insertado correctamente en la cola:
+
+  -- while not dcola_jugador.esta_vacia(colaFlavioJosefo) loop
+  --    jugador:= dcola_jugador.coger_primero(colaFlavioJosefo);
+  --    Put_Line("El jugador" & Integer'Image(indiceRecorrido) & " es " & jugador.nom(1..jugador.l));
+  --    indiceRecorrido := indiceRecorrido + 1;
+  --    dcola_jugador.borrar_primero(colaFlavioJosefo);
+  -- end loop;
+   
+   -----------------------------------------------------------------------------
+   
+   -- Una vez tenemos la estructura y los datos contenidos en ella, en esta sec-
+   -- ción del programa principal se codificará el algoritmo que resuelve el
+   -- problema planteado:
+   
+   while not dcola_jugador.is_last_item(colaFlavioJosefo) loop
+      while contadorPasadas < numPasadas loop
+         jugador := dcola_jugador.coger_primero(colaFlavioJosefo);
+         dcola_jugador.borrar_primero(colaFlavioJosefo);
+         dcola_jugador.poner(colaFlavioJosefo, jugador);
+         contadorPasadas :=  contadorPasadas + 1;
+      end loop;
+      dcola_jugador.borrar_primero(colaFlavioJosefo);
+      contadorPasadas := 0;
+   end loop;
+   
+   jugador := dcola_jugador.coger_primero(colaFlavioJosefo);
+   Put_Line("El ganador es " & jugador.nom(1..jugador.l) & ".");
+   
+   -----------------------------------------------------------------------------
+   Put_Line(" ");
+end Main;
